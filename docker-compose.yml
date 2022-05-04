@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  database:
+    image: postgres:14.1-alpine
+    restart: always
+    container_name: py-auth-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tokens
+    ports:
+      - 5432:5432
+    volumes:
+      - ./create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: py-token-server
+    volumes:
+      - .:/app
+    ports:
+      - ${SERVER_PORT-8080}:8080
+    environment:
+      - SECRET=secretsecretsecret
+      - DBUSER=postgres
+      - DBPASS=postgres
+      - DBHOST=host.docker.internal
+      - DBNAME=tokens
+    depends_on:
+      - database
+    networks:
+      - default
+ 
